@@ -1,89 +1,95 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include "board.h"
+#include "move_fig.h"
 
 char **arr;
 
-char **board()
-{
-    arr =  (char**) malloc(9 * sizeof(char*));
+char **board() {
+    arr = (char**) malloc(8 * sizeof(char*));
     int i,j;
-
-    for (i = 0; i < 9; i++) {
-    arr[i] = (char*)malloc(9 * sizeof(char));
-        for (j = 0; j < 9; j++) {
+    
+    for (i = 0;i < 8; i++) {
+        arr[i] = (char*) malloc(8 * sizeof(char));
+        for (j = 0;j < 8; j++) {
             arr[i][j] = ' ';
         }
     }
-
-    char g1[]={'r','n','b','q','k','b','n','r'};
+    
+    char g1[] = {'r','h','e','q','k','e','h','r'};
     char p = 'p';
     
-    for (i = 0; i < 8; i++) {
-        arr[i][0] = 56 -i;
-    }
-    
-    for (i = 0; i < 9; i++){
-        arr [8][i] = 96 + i;
-    }
-    
-    for (i=1; i<9; i++){
-       arr[0][i]= g1[i-1];
-       arr[7][i]= g1[i-1] -32;
-       arr[1][i]= p;
-       arr[6][i]= p -32;
+    for (i = 0;i < 8; i++) {
+        arr[0][i] = g1[i];
+        arr[7][i] = g1[i] - 32;
+        arr[1][i] = p;
+        arr[6][i] = p - 32;
     }
     return arr;
 }
 
-void print_new_board(char **arr)
-{
+void  print_new_board() {
     arr = board();
     print_board(arr);
 }
 
-void print_board(char **arr)
-{
-    int i,j;
-
+void print_board(char **arr) {
+    system("clear");
     printf("\n");
-    for (i = 0; i < 9; i++) {
-        for (j = 0; j < 9; j++) {
-                printf("%3c", arr[i][j]);
+    for (int i = 0;i < 8; i++) {
+        printf("\t %d", 8 - i);
+        for (int j = 0;j < 8; j++) {
+            printf(" %c", arr[i][j]);
         }
         printf("\n");
-    } 
+    }
+    
+    printf("\t ");
+    
+    for (char p = 'a'; p <= 'h'; p++) {
+        printf(" %c", p);
+    }
+    
+    printf("\n");
 }
-char** movePawn(char **v, int* pozition)
-{
-    if  (pozition[0] == pozition[2]) {
-        int poz = arr[pozition[1]][pozition[0]];
-        arr[pozition[1]][pozition[0]] = arr[pozition[3]][pozition[2]];
-        arr[pozition[3]][pozition[2]] = poz;
-    } 
 
-    else printf ("Try again");
+char** movePawn(char **v, int* pozition) {
+    int poz = arr[pozition[1]][pozition[0]];
+    arr[pozition[1]][pozition[0]] = arr[pozition[3]][pozition[2]];
+    arr[pozition[3]][pozition[2]] = poz;
 
     return v;
 }
-int board_func(char *one_place, char *two_place) {
 
-    int pozition[4], g;
+int board_func(char *places, int test) {
     
-    pozition[0] = one_place[0] - 96; //a
-    pozition[1] = 9 - (one_place[1] - 48) - 1; //2
-    pozition[2] = two_place[0] - 96; //c
-    pozition[3] = 9 - (two_place[1] - 48) - 1; //8
+    if (strlen(places) != 5) {
+        return -1;
+    }
+    int pozition[4];
+    pozition[0] = places[0] - 96 - 1; //a
+    pozition[1] = 9 - (places[1] - 48) - 1; //2
+    pozition[2] = places[3] - 96 - 1; //c
+    pozition[3] = 9 - (places[4] - 48) - 1; //8
     printf("\n ");
-
-    for(g = 0; g < 4; g++) {
-        if (pozition[g] < 0 || pozition[g] > 9) {
+    
+    int check = move_figure(pozition, arr);
+    if (check == -1) {
+        return -1;
+    }
+    
+    for(int g = 0; g < 4; g++) {
+        if (pozition[g] < 0 || pozition[g] > 8) {
             return -1;
-         }
+        }
     }
 
     arr = movePawn(arr, pozition);
-    print_board(arr);
+    if (test == 0) {
+        print_board(arr);
+    }
     return 0;
 }
+
