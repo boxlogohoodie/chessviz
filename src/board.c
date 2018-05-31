@@ -1,197 +1,89 @@
 #include <stdio.h>
-
-#include "board.h"
-
 #include <stdlib.h>
 #include <math.h>
+#include "board.h"
 
-char **board;
+char **arr;
 
-void init_board()
+char **board()
 {
-	board = (char **)malloc(8 * sizeof(char *));
+    arr =  (char**) malloc(9 * sizeof(char*));
+    int i,j;
 
-	for (int i = 0; i < 8; ++i)
-	{
-		board[i] = (char *)malloc(8 * sizeof(char));
-		for (int j = 0; j < 8; ++j)
-		{
-			board[i][j] = ' ';
-		}
-	}
-	fill_board();
+    for (i = 0; i < 9; i++) {
+    arr[i] = (char*)malloc(9 * sizeof(char));
+        for (j = 0; j < 9; j++) {
+            arr[i][j] = ' ';
+        }
+    }
+
+    char g1[]={'r','n','b','q','k','b','n','r'};
+    char p = 'p';
+    
+    for (i = 0; i < 8; i++) {
+        arr[i][0] = 56 -i;
+    }
+    
+    for (i = 0; i < 9; i++){
+        arr [8][i] = 96 + i;
+    }
+    
+    for (i=1; i<9; i++){
+       arr[0][i]= g1[i-1];
+       arr[7][i]= g1[i-1] -32;
+       arr[1][i]= p;
+       arr[6][i]= p -32;
+    }
+    return arr;
 }
 
-void fill_board()
+void print_new_board(char **arr)
 {
-	for (int i = 0; i < 8; i++)
-	{
-		board[i][1] = 'P';
-		board[i][6] = 'p';
-	}
-
-	board[0][0] = 'R';
-	board[1][0] = 'N';
-	board[2][0] = 'B';
-	board[3][0] = 'Q';
-	board[4][0] = 'K';
-	board[5][0] = 'B';
-	board[6][0] = 'N';
-	board[7][0] = 'R';
-	board[0][7] = 'r';
-	board[1][7] = 'n';
-	board[2][7] = 'b';
-	board[3][7] = 'q';
-	board[4][7] = 'k';
-	board[5][7] = 'b';
-	board[6][7] = 'n';
-	board[7][7] = 'r';
+    arr = board();
+    print_board(arr);
 }
 
-void clean_board()
+void print_board(char **arr)
 {
-	for (int i = 0; i < 8; i++)
-	{
-		free(board[i]);
-	}
-	free(board);
+    int i,j;
 
-	board = NULL;
+    printf("\n");
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+                printf("%3c", arr[i][j]);
+        }
+        printf("\n");
+    } 
 }
-
-void print_board()
+char** movePawn(char **v, int* pozition)
 {
-	for (int i = 7; i >= -1; i--)
-	{
-		fprintf(out, "  ---------------------------------\n");
+    if  (pozition[0] == pozition[2]) {
+        int poz = arr[pozition[1]][pozition[0]];
+        arr[pozition[1]][pozition[0]] = arr[pozition[3]][pozition[2]];
+        arr[pozition[3]][pozition[2]] = poz;
+    } 
 
-		for (int j = 8; j > -1; j--)
-		{
-			if (j > 7 && i < 0)
-			{
-				fprintf(out, "   ");
-			}
-			else  if (j > 7)
-			{
-				fprintf(out, "%d |", i + 1);
-			}
-			else if (i < 0)
-			{
-				fprintf(out, " %c  ", 'H' - j);
-			}
-			else
-			{
-				fprintf(out, " %c |", board[7 - j][i]);
-			}
+    else printf ("Try again");
 
-		}
-
-		fprintf(out, "\n");
-	}
+    return v;
 }
+int board_func(char *one_place, char *two_place) {
 
-bool in_bounds(char ch, char b1, char b2)
-{
-	return ((b1 <= ch) && (ch <= b2));
-}
+    int pozition[4], g;
+    
+    pozition[0] = one_place[0] - 96; //a
+    pozition[1] = 9 - (one_place[1] - 48) - 1; //2
+    pozition[2] = two_place[0] - 96; //c
+    pozition[3] = 9 - (two_place[1] - 48) - 1; //8
+    printf("\n ");
 
-bool check_syntax(char *str)
-{
-	return ((in_bounds(str[0], 'a', 'h')) &&
-		(in_bounds(str[1], '1', '8')) &&
-		((str[2] == '-') || (str[2] == 'x')) &&
-		(in_bounds(str[3], 'a', 'h')) &&
-		(in_bounds(str[4], '1', '8')));
-}
+    for(g = 0; g < 4; g++) {
+        if (pozition[g] < 0 || pozition[g] > 9) {
+            return -1;
+         }
+    }
 
-int make_move(log_t *st)
-{
-	bool allow;
-	int h1 = (int)(st->line[0] - 'a');
-	int h2 = (int)(st->line[3] - 'a');
-	int v1 = (int)(st->line[1] - '1');
-	int v2 = (int)(st->line[4] - '1');
-
-	allow = check(h1, v1, h2, v2);
-
-	if (allow == false) { return 0; }
-
-	if (board[h2][v2] == ' ')
-	{
-		board[h2][v2] = board[h1][v1];
-		board[h1][v1] = ' ';
-	}
-	else return 0;
-
-	return 1;
-}
-
-int make_kill(log_t *st)
-{
-	bool allow;
-	int h1 = (int)(st->line[0] - 'a');
-	int h2 = (int)(st->line[3] - 'a');
-	int v1 = (int)(st->line[1] - '1');
-	int v2 = (int)(st->line[4] - '1');
-
-	allow = check(h1, v1, h2, v2);
-
-	if (allow == false) { exit_program((char *)"Wrong turn\n", 8); }
-
-		if (board[h2][v2] != ' ')
-	{
-		board[h2][v2] = board[h1][v1];
-		board[h1][v1] = ' ';
-	}
-	else return 0;
-
-	return 1;
-}
-
-void turn()
-{
-	log_t *turn;
-
-	turn = log_head;
-
-	while (turn != NULL)
-	{
-		if (turn->line[2] == '-')
-		{
-			make_move(turn);
-		}
-		else if (turn->line[2] == 'x')
-		{
-			make_kill(turn);
-		}
-
-		turn = turn->next;
-	}
-}
-
-bool check(int h1, int v1, int h2, int v2)
-{
-	if ((board[h1][v1] == 'p') || (board[h1][v1] == 'P'))
-	{
-		int difh = fabs(h2 - h1);
-		int difv = fabs(v2 - v1);
-
-		if (difh != 0) { return false; }
-
-		if ((v2 > v1) && (board[h1][v1] == 'p')) { return false; }
-		if ((v2 < v1) && (board[h1][v1] == 'P')) { return false; }
-
-		if ((board[h1][v1] == 'P') && (v1 == 1) && (difv <= 2)) { return true; }
-		else if ((board[h1][v1] == 'p') && (v1 == 6) && (difv <= 2)) { return true; }
-
-
-		if ((board[h1][v1] == 'P') && (v1 != 1) && (difv == 1)) { return true; }
-		else return false;
-
-
-		if ((board[h1][v1] == 'p') && (v1 != 6) && (difv == 1)) { return true; }
-		else return false;
-	}
-
-	return true;
+    arr = movePawn(arr, pozition);
+    print_board(arr);
+    return 0;
 }
