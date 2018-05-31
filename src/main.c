@@ -2,37 +2,34 @@
 #include <stdlib.h>
 #include "board.h"
 
-int main()
-{
-    int i = 0;
-    while (i == 0) {
-        char q;
-        printf("\tНажмите (s) для старта или (q), чтобы выйти\n");
-        printf("\t\t Command: ");
-        scanf("%c", &q);
-        print_new_board();
-        if (q == 's') {
-            i = -1;
-            int exit = 0;
+int main() {
+    system("clear");
+    int k = 0,exit;
+    char places[6];
+    while ( k == 0) {
+        char status;
+        printf("\t(s) Start or (q) Quit\n");
+        scanf("%c", &status);
+        if (status == 's') {
+            system("clear");
+            print_new_board();
             while (exit == 0) {
-                char one_place[4], two_place [4];
-                printf("Введите координаты или (r) для рестарта: \n");
-                scanf("%s %s", one_place, two_place);
-                if (one_place[0] == 'r') {
+                printf("Write coordinates or (q) to Quit:\n" );
+                scanf("%s", places);
+                if (places[0] == 'q') {
                     system("clear");
-                    exit = 1;
-                    main();
+                    return 0;
                 } else {
-                    exit = board_func(one_place, two_place);
+                    exit = board_func(places, 0);
                     if (exit == -1) {
                         print_new_board();
-                        printf("\t Неверные координаты.\n");
+                        printf("\t  ERROR COORDINATES!\n");
                         exit = 0;
                     }
                 }
             }
-        } else if (q == 'q') {
-            system("clear");
+        } else  if  (status == 'q') {
+            system ("clear");
             return 0;
         }
     }
